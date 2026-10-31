@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.env
+*.pt
+*.pth
+*.parquet
+*.tgz
+*.zip
+# full dataset and weights are not stored in this repository
+data/
+runs/
+# local tool folders (never publish)
+.claude/
+.mcp.json

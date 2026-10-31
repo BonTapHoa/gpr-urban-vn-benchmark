@@ -1,0 +1,4 @@
+numpy
+Pillow
+pytest
+# experiments/ additionally need: torch, ultralytics==8.4.194, pandas, scikit-learn, scipy

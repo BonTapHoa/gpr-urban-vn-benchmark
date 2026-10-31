@@ -1,0 +1,144 @@
+{
+  "contract_version": "2.0.0",
+  "status": "user_decision_implementation_and_physical_validation_pending",
+  "decision_date": "2026-09-28",
+  "manifest_namespace": "GPRVN_v2_<frequency_mhz>_<index:06d>",
+  "legacy_policy": "preserve_v1_manifest_ids_and_batches; never overwrite or relabel as v2",
+  "depth_reference": "object_center_below_ground_surface_m",
+  "coordinate_system": "x_right_y_up; center_y=ground_y-depth",
+  "frequency_allocation": {
+    "700": 0.5,
+    "400": 0.5
+  },
+  "profiles": {
+    "700": {
+      "frequency_hz": 700000000.0,
+      "dx_m": 0.0025,
+      "dy_m": 0.0025,
+      "dt_s": 5.896e-12,
+      "requested_time_window_ns": 30,
+      "raw_steps": 5089,
+      "export_time_samples": 1024,
+      "export_policy": "resample_and_record_actual_time_axis; never reuse_raw_dt",
+      "traces": 125,
+      "trace_spacing_m": 0.02,
+      "tx_rx_offset_m": 0.1,
+      "scan_x_start_m": 0.075,
+      "scan_x_end_m": 2.555,
+      "depth_center_range_m": [
+        0.25,
+        1.4
+      ],
+      "ground_y_m": 1.8,
+      "domain_m": [
+        2.75,
+        2.0
+      ],
+      "pml_cells": 10,
+      "source_height_above_ground_m": 0.05
+    },
+    "400": {
+      "frequency_hz": 400000000.0,
+      "dx_m": 0.0035,
+      "dy_m": 0.0035,
+      "dt_s": 8.254e-12,
+      "requested_time_window_ns": 45,
+      "raw_steps": 5452,
+      "export_time_samples": 1024,
+      "export_policy": "resample_and_record_actual_time_axis; never reuse_raw_dt",
+      "traces": 120,
+      "trace_spacing_m": 0.025,
+      "tx_rx_offset_m": 0.16,
+      "scan_x_start_m": 0.1,
+      "scan_x_end_m": 3.075,
+      "depth_center_range_m": [
+        0.5,
+        1.4
+      ],
+      "ground_y_m": 2.4,
+      "domain_m": [
+        3.36,
+        2.6
+      ],
+      "pml_cells": 10,
+      "source_height_above_ground_m": 0.05
+    }
+  },
+  "water_mixture": {
+    "dry_mass": 0.25,
+    "full_mass": 0.25,
+    "continuous_mass": 0.5,
+    "continuous_distribution": "Beta",
+    "alpha": 2,
+    "beta": 2,
+    "exact_equal_continuous_bins": false,
+    "ratio_semantics": "fraction_of_available_inner_height_above_silt; not volume_fraction"
+  },
+  "supported_types": [
+    "pec",
+    "upvc_air",
+    "upvc_water",
+    "upvc_triphase",
+    "cable_bundle",
+    "box_culvert",
+    "sinkhole_void"
+  ],
+  "unsupported_type_policy": "raise; no silent type substitution",
+  "geometry_policy": {
+    "maximum_half_height_m": 0.3,
+    "minimum_non_pml_clearance_m": 0.05,
+    "object_pair_surface_clearance_m": 0.05,
+    "rejection_attempt_limit": 1000,
+    "exhausted_policy": "raise_without_writing_scene",
+    "culvert_width_m": [
+      0.4,
+      0.8
+    ],
+    "culvert_height_m": [
+      0.4,
+      0.6
+    ],
+    "culvert_wall_m": 0.08,
+    "cable_radius_m": [
+      0.015,
+      0.035
+    ],
+    "sinkhole_radius_m": [
+      0.1,
+      0.3
+    ]
+  },
+  "required_scenario_fields": [
+    "sample_id",
+    "contract_version",
+    "frequency_mhz",
+    "seed",
+    "objects_json",
+    "h_asphalt_m",
+    "er_asphalt",
+    "sig_asphalt",
+    "h_base_m",
+    "er_base",
+    "sig_base",
+    "er_subgrade",
+    "sig_subgrade",
+    "roughness_amp",
+    "gravel_count"
+  ],
+  "required_object_fields": [
+    "type",
+    "xc",
+    "depth",
+    "water_ratio",
+    "silt_ratio"
+  ],
+  "batch_requirement": "versioned acquisition metadata and checksum; pending R10",
+  "validation_gates": [
+    "frequency_and_cfl",
+    "geometry_in_non_pml_domain",
+    "layer_material_and_clutter_consumption",
+    "time_window_visibility_without_clipping",
+    "gprMax_reference_comparison"
+  ],
+  "bulk_generation_authorized": false
+}
