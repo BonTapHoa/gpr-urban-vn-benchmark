@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this repository or the GPR-URBAN-VN data, please cite the paper below."
-title: "GPR-URBAN-VN: Companion Code and Benchmark Repository"
+title: "GPR-URBAN-VN: Code and Benchmark Repository"
 type: software
 authors:
   - family-names: "Tu"

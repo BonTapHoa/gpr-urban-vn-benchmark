@@ -1,6 +1,6 @@
-# GPR-URBAN-VN benchmark: companion repository
+# GPR-URBAN-VN benchmark: code repository
 
-Companion code for *GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical
+Code for *GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical
 Urban Pavements* (Dinh-Nguyen Tu, Hoang-Thien-Nga Nguyen, Hoai-Trung Dang; submitted to ACIIDS 2027). It holds the grouped
 split, a small loader, the label code, the generator code and the experiment scripts behind the numbers in the paper.
 
@@ -18,7 +18,7 @@ split, a small loader, the label code, the generator code and the experiment scr
 | `experiments/generalization/`, `physaug/`, `rebar/` | Held-out conditions, scaling, perturbations, field-data fine-tuning, joint training, label-permutation control |
 
 ## What is not here
-- The full dataset (images, float32 wavefields, scene metadata) and model weights: too large for this repository. A persistent DOI will be added here when the full data are published.
+- The full dataset (images, float32 wavefields, scene metadata) and model weights: too large for this repository. The full dataset is on Harvard Dataverse (reserved DOI `10.7910/DVN/VYMICL`, in draft until the paper is accepted; the DOI resolves once it is published).
 - Field data (two public sets used for transfer experiments) are not redistributed; see the paper for their sources and licences.
 - The `experiments/` and `scripts/` files are the scripts **as run** on a cloud notebook VM; they contain that VM's paths (`/content/...`) and need the full dataset. They are provided for transparency, not as a one-command reproduction.
 
