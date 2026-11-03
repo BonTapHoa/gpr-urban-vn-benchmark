@@ -16,7 +16,7 @@ The box is sized from the source wavelet, not from a fixed number of ns:
   * horizontal extent = antenna positions where the arrival curve stays inside
     that vertical extent (finite-velocity hyperbola)
 Both are analytic and are checked against full-wave references (oracle) in the
-experiments (companion work, withheld for double-blind review).
+experiments (companion work, in preparation).
 
 Presets (LabelConfig.preset) give the three schemes compared in the paper:
   uncorrected  background layers only, wavelet-based extent

@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this repository or the GPR-URBAN-VN data, please cite the paper below."
+title: "GPR-URBAN-VN: Companion Code and Benchmark Repository"
+type: software
+authors:
+  - family-names: "Tu"
+    given-names: "Dinh-Nguyen"
+    orcid: "https://orcid.org/0009-0009-7489-1102"
+    affiliation: "High School for the Gifted, Vietnam National University Ho Chi Minh City"
+  - family-names: "Nguyen"
+    given-names: "Hoang-Thien-Nga"
+    orcid: "https://orcid.org/0009-0007-9383-7713"
+    affiliation: "High School for the Gifted, Vietnam National University Ho Chi Minh City"
+  - family-names: "Dang"
+    given-names: "Hoai-Trung"
+    orcid: "https://orcid.org/0000-0002-8089-9380"
+    affiliation: "University of Science, Vietnam National University Ho Chi Minh City"
+repository-code: "https://github.com/BonTapHoa/gpr-urban-vn-benchmark"
+license: MIT
+date-released: "2026-11-03"
+preferred-citation:
+  type: article
+  title: "GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical Urban Pavements"
+  authors:
+    - family-names: "Tu"
+      given-names: "Dinh-Nguyen"
+    - family-names: "Nguyen"
+      given-names: "Hoang-Thien-Nga"
+    - family-names: "Dang"
+      given-names: "Hoai-Trung"
+  year: 2026
+  notes: "Submitted to ACIIDS 2027."

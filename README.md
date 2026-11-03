@@ -1,7 +1,8 @@
-# GPR-URBAN-VN benchmark: anonymous companion repository
+# GPR-URBAN-VN benchmark: companion repository
 
-This repository accompanies a double-blind submission. It holds the grouped split, a small loader, the label code, the
-generator code and the experiment scripts behind the numbers in the paper. Authorship information is intentionally absent.
+Companion code for *GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical
+Urban Pavements* (Dinh-Nguyen Tu, Hoang-Thien-Nga Nguyen, Hoai-Trung Dang; submitted to ACIIDS 2027). It holds the grouped
+split, a small loader, the label code, the generator code and the experiment scripts behind the numbers in the paper.
 
 ## What is here
 | Path | Content |
@@ -17,7 +18,7 @@ generator code and the experiment scripts behind the numbers in the paper. Autho
 | `experiments/generalization/`, `physaug/`, `rebar/` | Held-out conditions, scaling, perturbations, field-data fine-tuning, joint training, label-permutation control |
 
 ## What is not here
-- The full dataset (images, float32 wavefields, scene metadata) and model weights: too large for this repository. A persistent DOI will be given in the camera-ready version.
+- The full dataset (images, float32 wavefields, scene metadata) and model weights: too large for this repository. A persistent DOI will be added here when the full data are published.
 - Field data (two public sets used for transfer experiments) are not redistributed; see the paper for their sources and licences.
 - The `experiments/` and `scripts/` files are the scripts **as run** on a cloud notebook VM; they contain that VM's paths (`/content/...`) and need the full dataset. They are provided for transparency, not as a one-command reproduction.
 
@@ -32,3 +33,12 @@ generator code and the experiment scripts behind the numbers in the paper. Autho
 pip install -r requirements.txt
 pytest tests/test_loader.py
 ```
+
+## Licence
+- Source code: MIT (`LICENSE`).
+- Data in this repository (`sample_data/`, `configs/`): CC BY 4.0 (`LICENSE-DATA.md`).
+- The full dataset will be published under CC BY 4.0.
+
+## Citation
+See `CITATION.cff` (GitHub shows a "Cite this repository" button). The paper is under review; this section will be updated
+with the final reference.
