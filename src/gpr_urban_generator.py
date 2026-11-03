@@ -1,7 +1,7 @@
 """
 ================================================================================
 GPR-URBAN-VN DATASET GENERATOR ENGINE (PyTorch Batch GPU FDTD)
-Author: Anonymous (double-blind review)
+Authors: Dinh-Nguyen Tu, Hoang-Thien-Nga Nguyen, Hoai-Trung Dang
 Platform: PyTorch 2.x + CUDA (Tesla T4 or higher)
 Standard: 400 MHz & 700 MHz Urban Vietnam Pavement & Multiphase Utilities
 ================================================================================
