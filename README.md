@@ -13,9 +13,9 @@ This repository contains the official benchmark code, data loaders, split manife
 
 ## Overview and Methodology Pipeline
 
-Ground penetrating radar (GPR) radargrams are computational images: each B-scan records an electromagnetic wavefield where buried utilities appear as hyperbolic diffraction patterns whose curvature encodes medium velocity. Interpreting B-scans with deep learning has been hindered by the lack of open benchmarks that combine instance-level labels with verified geometric ground truth (exact depth and radius).
+Ground penetrating radar (GPR) B-scans represent computational images of subsurface electromagnetic wavefields where buried utilities manifest as hyperbolic diffraction patterns. Developing learning-based interpretation for urban excavation safety requires open benchmarks combining instance-level annotations with verified physical geometry across variable moisture regimes.
 
-**GPR-URBAN-VN** addresses this by providing 10,000 independent urban pavement scenarios (5,000 at 400 MHz and 5,000 at 700 MHz, unpaired) containing 19,000 buried targets across seven classes with exact physical dimensions, simulated via a GPU FDTD solver rigorously validated against gprMax.
+**GPR-URBAN-VN** addresses this by introducing a physics-validated dual-frequency benchmark spanning 10,000 independent urban pavement scenarios (5,000 at 400 MHz and 5,000 at 700 MHz, unpaired) containing 19,000 buried targets across seven classes, structured into three tiers with 17,758 visible bounding boxes validated against FDTD background-subtraction scattered wavefields.
 
 <p align="center">
   <img src="assets/pipeline_overview.png" alt="GPR-URBAN-VN Methodology Pipeline" width="100%"/>
