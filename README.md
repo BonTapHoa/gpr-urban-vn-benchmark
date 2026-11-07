@@ -198,15 +198,24 @@ split = load_split("configs/splits/gpr_urban_vn_split_10k_base.json")
 for sample_id, image, boxes in iter_split(split, "test", Path("sample_data")):
     print(f"Sample: {sample_id}, Image shape: {image.shape}, Targets: {len(boxes)}")
 ```
-Or run the provided quickstart script:
+Or run the provided quickstart script or interactive Jupyter Notebook:
 ```bash
 python examples/quickstart_visualize.py
+# Or launch the comprehensive tutorial notebook:
+jupyter notebook examples/quickstart_demo.ipynb
 ```
 
 <p align="center">
   <img src="assets/sample_annotated_radargram.png" alt="Sample Annotated Radargram" width="50%"/>
   <br/><em>Example output from <code>sample_data/</code> with verified bounding boxes overlaid.</em>
 </p>
+
+---
+
+## Technical Appendix and Supplementary Material
+
+For detailed physical derivations, $7\times 7$ normalized detector confusion matrices, moisture-stratified depth distributions, and FDTD background-subtraction wavefield galleries, please refer to the technical appendix:
+* **[Supplementary_Material.pdf](docs/Supplementary_Material.pdf)** (7-page comprehensive technical report)
 
 ---
 
@@ -226,7 +235,8 @@ gpr-urban-vn-benchmark/
 ├── configs/
 │   ├── splits/              # Official leak-free geometry-grouped scenario splits
 │   └── dataset_physics_v2.json  # Grid discretizations and antenna parameters
-├── examples/                # Quickstart visualization scripts
+├── docs/                    # Technical appendix (Supplementary_Material.pdf)
+├── examples/                # Quickstart scripts and Jupyter tutorial (quickstart_demo.ipynb)
 ├── experiments/             # Cloud VM scripts for T1, T2, and transfer studies
 ├── gpr_urban_vn_benchmark/  # Benchmark Python package and data loader
 ├── sample_data/             # 12 representative test B-scans and box annotations
