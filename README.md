@@ -1,44 +1,262 @@
-# GPR-URBAN-VN benchmark: code repository
+# GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical Urban Pavements
 
-Code for *GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical
-Urban Pavements* (Dinh-Nguyen Tu, Hoang-Thien-Nga Nguyen, Hoai-Trung Dang; submitted to ACIIDS 2027). It holds the grouped
-split, a small loader, the label code, the generator code and the experiment scripts behind the numbers in the paper.
+[![Paper Under Review](https://img.shields.io/badge/Paper-ACIIDS%202027%20CIV-orange.svg)](#citation)
+[![License: MIT](https://img.shields.io/badge/Code%20License-MIT-blue.svg)](LICENSE)
+[![License: CC BY 4.0](https://img.shields.io/badge/Data%20License-CC%20BY%204.0-lightgrey.svg)](LICENSE-DATA.md)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-red.svg)](https://pytorch.org/)
+[![Dataverse Draft DOI](https://img.shields.io/badge/Dataverse%20Preview-10.7910%2FDVN%2FVYMICL-green.svg)](#full-dataset-access-harvard-dataverse-preview)
 
-## What is here
-| Path | Content |
-|---|---|
-| `configs/splits/gpr_urban_vn_split_10k_base.json` | Official split: 7,000 / 1,000 / 2,000 scenes (3,500 / 500 / 1,000 per frequency), grouped by scene geometry |
-| `configs/dataset_physics_v2.json` | FDTD grid and source settings (400 MHz and 700 MHz) |
-| `gpr_urban_vn_benchmark/` | Loader: split, YOLO labels, Tier-3 images (`pytest tests/test_loader.py`) |
-| `sample_data/` | 12 test scenes (6 at 400 MHz, 6 at 700 MHz): 640x640 images and box labels |
-| `src/label_refraction.py` | Box and arrival-time label code (analytic, reads scene metadata only); `tests/test_label_refraction.py` |
-| `src/gpr_urban_generator.py`, `src/fdtd_fused.py` | Scene generator and the GPU FDTD solver |
-| `scripts/` | Detector training (`train_detector.py`), test-set evaluation with bootstrap intervals (`eval_detectors_test.py`), field-data trees |
-| `experiments/t2/` | Depth task (T2): one-velocity baseline, ResNet-18 regressor, hyperbola-fit baselines |
-| `experiments/generalization/`, `physaug/`, `rebar/` | Held-out conditions, scaling, perturbations, field-data fine-tuning, joint training, label-permutation control |
+This repository contains the official benchmark code, data loaders, split manifests, verified geometry-based annotation generators, and evaluation scripts for **GPR-URBAN-VN**, submitted to **ACIIDS 2027 (Special Session on Computational Imaging and Vision - CIV)**.
 
-## What is not here
-- The full dataset (images, float32 wavefields, scene metadata) and model weights: too large for this repository. The full dataset is on Harvard Dataverse (reserved DOI `10.7910/DVN/VYMICL`, in draft until the paper is accepted; the DOI resolves once it is published).
-- Field data (two public sets used for transfer experiments) are not redistributed; see the paper for their sources and licences.
-- The `experiments/` and `scripts/` files are the scripts **as run** on a cloud notebook VM; they contain that VM's paths (`/content/...`) and need the full dataset. They are provided for transparency, not as a one-command reproduction.
+---
 
-## Data conventions
-- Image names: `GPRVN_v2_<freq_MHz>_<index>.png` (400 or 700). The two frequencies are independent scenario sets, not paired.
-- Label line: `class cx cy w h`, normalised; x is the survey axis and y two-way travel time. Only targets whose echo is recorded in the time window have a box (17,758 of 19,000 targets).
-- Classes: `pec, upvc_air, upvc_water, upvc_triphase, cable_bundle, box_culvert, sinkhole_void` (ids 0-6).
-- The data are simulated (2D TM_z FDTD); see the paper for the limitations.
+## Overview and Methodology Pipeline
 
-## Quick check
+Ground penetrating radar (GPR) radargrams are computational images: each B-scan records an electromagnetic wavefield where buried utilities appear as hyperbolic diffraction patterns whose curvature encodes medium velocity. Interpreting B-scans with deep learning has been hindered by the lack of open benchmarks that combine instance-level labels with verified geometric ground truth (exact depth and radius).
+
+**GPR-URBAN-VN** addresses this by providing 10,000 independent urban pavement scenarios (5,000 at 400 MHz and 5,000 at 700 MHz, unpaired) containing 19,000 buried targets across seven classes with exact physical dimensions, simulated via a GPU FDTD solver rigorously validated against gprMax.
+
+<p align="center">
+  <img src="assets/pipeline_overview.png" alt="GPR-URBAN-VN Methodology Pipeline" width="100%"/>
+</p>
+
+### Key Contributions
+1. **Large-Scale Multi-Tier Benchmark:** 10,000 scenarios, 19,000 targets across 7 classes, structured into Scene Metadata (Tier 1), Float32 Wavefields (Tier 2), and $640\times 640$ B-scans with 17,758 verified boxes (Tier 3).
+2. **Physical Validation and Audit:** Custom GPU FDTD solver validated against gprMax ($r=0.973$, SSIM $0.995$ on 20 pavement scenes); quasi-orthogonal 11D Latin Hypercube sampling (max pairwise correlation $\le 0.027$); zero overlapping geometry; and synthetic boxes confirmed against full-wave FDTD references (median IoU $0.82$ on cylindrical utilities).
+3. **Standardized Dual-Task Evaluation:** Leak-free scenario split grouped by exact geometry ($1\,\mu\text{m}$ tolerance). Reference detectors (YOLO11-m, RT-DETR-l) for detection (T1) and operational kinematic vs. learned regressor (M1 ResNet-18, MAE $2.26$\,cm) for depth estimation (T2).
+4. **Transferability and Boundary Analyses:** Demonstrates that while zero-shot transfer collapses, simulation pre-training decisively accelerates field adaptation under label scarcity (+0.29 $\text{mAP}_{50}$ on Mojahid utilities with 8--20 radargrams; up to +0.172 on Rebar concrete), corroborated by label-shuffled physics controls.
+
+---
+
+## Dataset Architecture and Scene Stratigraphy
+
+The dataset is structured into three distinct tiers to support both vision-based detection and wavefield inversion:
+
+<p align="center">
+  <img src="assets/fig1_architecture.png" alt="Three-Tier Dataset Architecture" width="90%"/>
+</p>
+
+* **Tier 1 (Metadata):** Layer thicknesses, permittivities, conductivities; target classes, lateral coordinate $x_c$, centre depth $z_c$, radius $R$, conduit fill level, and crown depth $z_{\mathrm{top}}$.
+* **Tier 2 (Wavefields):** Received electric field $E_z(t, x)$ stored as uncompressed float32 arrays (120 traces over 45 ns at 400 MHz; 125 traces over 30 ns at 700 MHz).
+* **Tier 3 (Images and Labels):** $640\times 640$ 8-bit radargrams paired with standard YOLO bounding boxes for all 17,758 visible targets with recorded echoes.
+
+### Pavement Stratigraphy and Target Distribution
+
+Each scene models a 3-layer flexible urban pavement: asphalt surface course ($h \in [0.06, 0.12]$\,m), crushed-stone base ($h \in [0.18, 0.32]$\,m), and tropical subgrade following the Peplinski dielectric model ($m_v \in [0.08, 0.32]$, $\varepsilon_{r,\mathrm{sub}} \in [10.0, 24.5]$, $\sigma_{\mathrm{sub}} \in [15, 85]$\,mS/m).
+
+<p align="center">
+  <img src="assets/fig2_scene_model.png" alt="Scene Model Stratigraphy" width="75%"/>
+</p>
+
+| Class Name | Target Description | Overall Share | Test Boxes ($N$) | Depth Range ($z_c$) | Outer Size |
+|---|---|---|---|---|---|
+| `upvc_triphase` | Three-phase power duct (3 internal cables) | 31.14% | 1,096 | 0.25--1.40 m | $R \in [5, 15]$\,cm |
+| `box_culvert` | Reinforced concrete drainage culvert | 27.41% | 1,014 | 0.40--1.40 m | $0.4\text{--}0.8 \times 0.4\text{--}0.6$\,m |
+| `upvc_water` | Water pipe with water fill mixture | 15.68% | 565 | 0.25--1.40 m | $R \in [3, 20]$\,cm |
+| `upvc_air` | Empty dry telecommunication conduit | 8.67% | 304 | 0.25--1.40 m | $R \in [3, 15]$\,cm |
+| `pec` | Metallic utility conduit (perfect conductor) | 8.27% | 298 | 0.25--1.40 m | $R \in [2, 15]$\,cm |
+| `cable_bundle` | Direct-buried power cable bundle | 8.05% | 281 | 0.25--1.40 m | $R \in [1.5, 5]$\,cm |
+| `sinkhole_void` | Air/moisture-filled subsurface road void | 0.77% | 27 | 0.25--1.20 m | $R \in [5, 30]$\,cm |
+
+### Dual-Frequency B-Scans and Visibility Horizon
+
+Frequencies are assigned per scenario (5,000 at 400 MHz and 5,000 at 700 MHz, **unpaired**):
+
+<p align="center">
+  <img src="assets/fig3_dual_frequency_radargrams.png" alt="Dual Frequency Radargrams" width="85%"/>
+</p>
+
+**Visibility Horizon:** Due to dielectric attenuation and finite time windows (30 ns at 700 MHz reaches $\approx 1.0$\,m in wet soil vs. 45 ns at 400 MHz reaching $\approx 1.45$\,m), 1,242 of 19,000 targets produce echoes outside the recording window. The 700 MHz visible share drops from 96.2% in dry soil to 79.2% in wet soil. The detection benchmark strictly evaluates on visible targets (17,758 total; 3,585 on the test split).
+
+---
+
+## In-Distribution Benchmark Results
+
+### Task 1: Subsurface Utility Detection (T1)
+
+Evaluated on 2,000 test B-scans (3,585 targets with bounding boxes). We report standard COCO metrics and **$\mathrm{AP}_{50}^{1}$** (greedy one-label-per-box matching at IoU=0.5, enforcing strict 1:1 attribution essential for civil mapping) with 95% percentile bootstrap confidence intervals over 1,000 test image resamples.
+
+| Model | Architecture | Params | $\mathrm{mAP}_{50}$ | $\mathrm{mAP}_{50\text{--}95}$ | Precision | Recall | $\mathrm{AP}_{50}^{1}$ [95% CI] |
+|---|---|---|---|---|---|---|---|
+| **YOLO11-m** | One-stage CNN | 20.1M | 0.864 | 0.733 | 0.903 | 0.786 | 0.831 [0.802, 0.866] |
+| **RT-DETR-l** | Hybrid Transformer | 32.8M | **0.893** | **0.845** | **0.922** | **0.837** | **0.893** [0.867, 0.918] |
+
+#### Stratified Performance Analysis ($\mathrm{AP}_{50}^{1}$)
+
+| Factor | Subset | Targets ($N$) | RT-DETR-l [95% CI] | YOLO11-m | Key Takeaway |
+|---|---|---|---|---|---|
+| **Frequency** | 400 MHz | 1,897 | 0.900 [0.861, 0.931] | 0.828 | In-distribution accuracy is balanced across frequencies |
+| | 700 MHz | 1,688 | 0.896 [0.859, 0.932] | 0.848 | ($\Delta \le 0.02$, within bootstrap margins). |
+| **Depth** | $z \le 0.6$\,m | 712 | 0.856 [0.802, 0.909] | 0.789 | Shallow: slight clutter from ground-bounce surface wave. |
+| | $0.6 < z \le 1.0$\,m | 1,541 | 0.897 [0.856, 0.934] | 0.866 | Optimal detection window across both frequencies. |
+| | $z > 1.0$\,m | 1,332 | **0.738** [0.694, 0.791] | 0.677 | **Governing factor:** Geometric spreading & attenuation. |
+| **Moisture** | Dry ($\varepsilon_{r,\mathrm{sub}} < 14.8$) | 1,287 | 0.884 [0.848, 0.914] | 0.828 | Conditioned on visibility, soil moisture does not degrade |
+| | Medium ($14.8 \le \varepsilon_r < 19.7$) | 1,145 | 0.902 [0.834, 0.954] | 0.848 | pattern recognition accuracy; moisture primarily |
+| | Wet ($\varepsilon_{r,\mathrm{sub}} \ge 19.7$) | 1,153 | 0.905 [0.860, 0.948] | 0.825 | dictates the physical visibility window. |
+
+#### Per-Class Detection Performance ($\mathrm{AP}_{50}^{1}$)
+* `box_culvert` [1,014]: RT-DETR-l **0.981** / YOLO11-m 0.987
+* `upvc_triphase` [1,096]: RT-DETR-l **0.945** / YOLO11-m 0.921
+* `pec` (metallic) [298]: RT-DETR-l **0.927** / YOLO11-m 0.830
+* `upvc_air` [304]: RT-DETR-l **0.921** / YOLO11-m 0.884
+* `upvc_water` [565]: RT-DETR-l **0.915** / YOLO11-m 0.904
+* `cable_bundle` [281]: RT-DETR-l **0.856** / YOLO11-m 0.777
+* `sinkhole_void` [27]: RT-DETR-l **0.705** [0.52, 0.85] / YOLO11-m 0.513
+
+<p align="center">
+  <img src="assets/fig4_qualitative.png" alt="Qualitative Detections and Failure Cases" width="70%"/>
+</p>
+
+---
+
+### Task 2: Crown Burial Depth Estimation (T2)
+
+Predicting utility crown depth $z_{\mathrm{top}}$ (soil cover) within engineering safety tolerances ($\pm 5, \pm 10, \pm 20$\,cm). Over-estimation ($>10$\,cm deeper than truth) represents the primary excavation strike hazard.
+
+* **B0 (Kinematic Baseline):** Converts travel time $t_{\mathrm{TWT}}$ from the box top edge via single linear calibration per frequency ($z = at + b$) fitted on training scenes (no soil permittivity metadata).
+* **M1 (Learned Regressor):** ResNet-18 taking a $256\times 256$ crop centred on the box, predicting an additive residual correction to B0 (mean of 3 seeds).
+
+| Stratum | Subset | Targets ($N$) | B0 MAE (cm) | B0 Over $>10$cm | M1 MAE (cm) | M1 Within $\pm 10$cm | M1 Over $>10$cm |
+|---|---|---|---|---|---|---|---|
+| **Overall** | All test targets | 3,585 | 4.80 | 4.5% | **2.26** $\pm$ .03 | **97.7%** | **0.8%** |
+| **Moisture** | Dry ($\varepsilon_r < 14.8$) | 1,287 | 6.19 | 0.0% | **2.50** | 96.4% | 0.0% |
+| | Medium | 1,145 | 2.44 | 0.2% | **2.09** | 98.7% | 0.6% |
+| | Wet ($\varepsilon_r \ge 19.7$) | 1,153 | 5.59 | 13.7% | **2.17** | 98.1% | 1.9% |
+| **Depth** | $z_{\mathrm{top}} \le 0.6$\,m | 1,287 | 2.39 | 0.0% | **0.92** | 100.0% | 0.0% |
+| | $0.6 < z_{\mathrm{top}} \le 1.0$\,m | 1,547 | 5.26 | 6.8% | **2.37** | 98.9% | 0.9% |
+| | $z_{\mathrm{top}} > 1.0$\,m | 751 | 7.99 | 7.3% | **4.34** | 91.5% | 1.8% |
+
+> **Label Noise Floor:** On 143 targets with FDTD full-wave references, travel time uncertainty ($0.72$\,ns) maps to a physical depth uncertainty of **$2.08$\,cm**. M1 ($2.26$\,cm) approaches this intrinsic physical ceiling.
+
+---
+
+## Generalisation, Scaling, and Field Transfer
+
+### 1. Out-of-Distribution (OOD) Generalisation
+* **Cross-Frequency Collapse:** Single-frequency models lose $0.31$--$0.44$ $\mathrm{AP}_{50}^{1}$ when evaluated on the other frequency ($400 \to 700$\,MHz: $0.294$ vs. $0.736$ control; $700 \to 400$\,MHz: $0.454$ vs. $0.766$ control). Frequency is the dominant distribution shift.
+* **Moisture Quasi-Invariance:** Excluding the wettest tercile during training degrades wet performance only slightly ($0.687$ vs. $0.742$ control, overlapping CIs).
+* **Depth Extrapolation:** Excluding the deepest tier degrades deep targets ($z > 1.0$\,m) from $0.580$ to $0.395$.
+
+### 2. Data Scaling and Noise Robustness
+
+<p align="center">
+  <img src="assets/scaling_and_noise.png" alt="Data Scaling Trajectory and Noise Sensitivity" width="95%"/>
+</p>
+
+* **Log-linear Scaling:** Performance scales steadily from 100 ($0.273$), 500 ($0.534$), 1,000 ($0.623$), and 3,500 ($0.746$) to 7,000 scenes ($0.831$) without plateauing. Deep targets ($z>1.0$\,m) gain the most ($0.122 \to 0.677$).
+* **Noise Sensitivity:** While models are robust to zero-time shifts ($\pm 8$ pixels, $|\Delta \text{AP}| \le 0.010$) and background removal, additive Gaussian noise degrades performance sharply ($\sigma=12$: $-0.131$ / $-0.199$; $\sigma=25$: $-0.37$).
+
+### 3. Sim-to-Real Transfer on Public Field Radargrams
+Evaluated on **Mojahid** (utilities & voids, 131 original radargrams) and **Rebar** (concrete reinforcement, 1,371 scan-labelled images, split strictly by scan ID).
+
+* **Zero-Shot Collapse:** Models applied directly to field data fail (Mojahid AUROC $0.23$--$0.37$, centre-in-box AP $0.06$--$0.15$; Rebar centre-in-box AP $0.08$--$0.12$, matching random centroids $0.09$--$0.13$).
+* **Label-Scarce Adaptation:** When field labels are scarce, simulation pre-training decisively accelerates fine-tuning.
+* **Label-Permutation Control (Shuf.):** Pre-training on simulated data with shuffled labels yields no benefit over COCO at 10% labels ($0.024$ vs. $0.035$ on Mojahid; $0.669$ vs. $0.656$ on Rebar), confirming that gains stem from physical wavefield representations. Correct labels win in 32 of 36 paired comparisons.
+
+| Field Dataset | Labels (%) | COCO Init | Shuffled Sim Init | Sim Init (Ours) | Joint Sim+Field (Ours) |
+|---|---|---|---|---|---|
+| **Mojahid** (Utilities) | 10% (8 scans) | 0.035 | 0.024 | 0.133 | **0.328** $\pm$ .093 (+0.29 over COCO) |
+| | 25% (20 scans) | 0.199 | 0.265 | 0.394 | **0.492** $\pm$ .038 (+0.29 over COCO) |
+| | 100% (79 scans) | **0.697** $\pm$ .072 | 0.567 | 0.637 | 0.673 |
+| **Rebar** (Concrete) | 10% (51--66) | 0.656 | 0.669 | **0.828** $\pm$ .010 (+0.172 over COCO) | --- |
+| | 25% (127--164) | 0.852 | 0.872 | **0.880** $\pm$ .035 (+0.028 over COCO) | --- |
+| | 100% (508--655) | 0.907 | 0.904 | **0.932** $\pm$ .014 (+0.025 over COCO) | --- |
+
+---
+
+## Quickstart and Usage
+
+### 1. Installation
+Clone the repository and install the lightweight requirements:
 ```bash
+git clone https://github.com/BonTapHoa/gpr-urban-vn-benchmark.git
+cd gpr-urban-vn-benchmark
 pip install -r requirements.txt
-pytest tests/test_loader.py
 ```
 
-## Licence
-- Source code: MIT (`LICENSE`).
-- Data in this repository (`sample_data/`, `configs/`): CC BY 4.0 (`LICENSE-DATA.md`).
-- The full dataset will be published under CC BY 4.0.
+### 2. Verify Split and Load Sample Data
+Run the test suite to verify leak-free split disjointness and test sample integrity:
+```bash
+pytest
+```
 
-## Citation
-See `CITATION.cff` (GitHub shows a "Cite this repository" button). The paper is under review; this section will be updated
-with the final reference.
+### 3. Quick Sample Visualisation
+To inspect sample B-scans with bounding boxes:
+```python
+from gpr_urban_vn_benchmark import load_split, iter_split
+from pathlib import Path
+
+split = load_split("configs/splits/gpr_urban_vn_split_10k_base.json")
+for sample_id, image, boxes in iter_split(split, "test", Path("sample_data")):
+    print(f"Sample: {sample_id}, Image shape: {image.shape}, Targets: {len(boxes)}")
+```
+Or run the provided quickstart script:
+```bash
+python examples/quickstart_visualize.py
+```
+
+<p align="center">
+  <img src="assets/sample_annotated_radargram.png" alt="Sample Annotated Radargram" width="50%"/>
+  <br/><em>Example output from <code>sample_data/</code> with verified bounding boxes overlaid.</em>
+</p>
+
+---
+
+## Full Dataset Access (Harvard Dataverse Preview)
+
+The full 10,000-scenario multi-tier dataset (metadata, float32 wavefields, full $640\times 640$ image archives) is archived on **Harvard Dataverse**:
+* **Permanent DOI:** `10.7910/DVN/VYMICL` (reserved; resolves upon acceptance)
+* **Private Preview for Reviewers:** [Access Dataverse DRAFT Preview](https://dataverse.harvard.edu/previewurl.xhtml?token=c1a3328c-e06e-49b9-8351-52f6b7ce86ac)
+
+---
+
+## Repository Structure
+
+```
+gpr-urban-vn-benchmark/
+├── assets/                  # Visualizations, diagrams, and plots for README
+├── configs/
+│   ├── splits/              # Official leak-free geometry-grouped scenario splits
+│   └── dataset_physics_v2.json  # Grid discretizations and antenna parameters
+├── examples/                # Quickstart visualization scripts
+├── experiments/             # Cloud VM scripts for T1, T2, and transfer studies
+├── gpr_urban_vn_benchmark/  # Benchmark Python package and data loader
+├── sample_data/             # 12 representative test B-scans and box annotations
+├── scripts/                 # Detection training and bootstrap evaluation scripts
+├── src/
+│   ├── fdtd_fused.py        # Custom PyTorch GPU 2D FDTD solver
+│   ├── gpr_urban_generator.py   # Pavement and target geometry generator
+│   └── label_refraction.py  # Geometry-based analytic box and depth labelling
+└── tests/                   # Pytest test suite
+```
+
+---
+
+## Citation and Authors
+
+If you use GPR-URBAN-VN in your research, please cite:
+
+```bibtex
+@inproceedings{tu2027gprurbanvn,
+  author    = {Tu, Dinh-Nguyen and Nguyen, Hoang-Thien-Nga and Dang, Hoai-Trung},
+  title     = {{GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical Urban Pavements}},
+  booktitle = {Proceedings of the Asian Conference on Intelligent Information and Database Systems (ACIIDS 2027)},
+  series    = {Lecture Notes in Artificial Intelligence},
+  publisher = {Springer},
+  year      = {2027},
+  note      = {Under review}
+}
+```
+
+Authors:
+* **Dinh-Nguyen Tu** (High School for the Gifted, VNU-HCM) - Corresponding author (`tudinhbon2009@gmail.com`)
+* **Hoang-Thien-Nga Nguyen** (High School for the Gifted, VNU-HCM)
+* **Hoai-Trung Dang** (University of Science, VNU-HCM)
+
+---
+
+## Licence
+
+* Source Code: [MIT License](LICENSE)
+* Benchmark Data & Annotations: [CC BY 4.0](LICENSE-DATA.md)
