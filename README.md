@@ -23,7 +23,7 @@ Ground penetrating radar (GPR) radargrams are computational images: each B-scan 
 
 ### Key Contributions
 1. **Large-Scale Multi-Tier Benchmark:** 10,000 scenarios, 19,000 targets across 7 classes, structured into Scene Metadata (Tier 1), Float32 Wavefields (Tier 2), and $640\times 640$ B-scans with 17,758 verified boxes (Tier 3).
-2. **Physical Validation and Audit:** Custom GPU FDTD solver validated against gprMax ($r=0.973$, SSIM $0.995$ on 20 pavement scenes); quasi-orthogonal 11D Latin Hypercube sampling (max pairwise correlation $\le 0.027$); zero overlapping geometry; and synthetic boxes confirmed against full-wave FDTD references (median IoU $0.82$ on cylindrical utilities).
+2. **Physical Validation and Audit:** Custom GPU FDTD solver validated against gprMax ($r=0.973$, SSIM $0.995$, NRMSE $3.52\%$ on 20 pavement scenes); quasi-orthogonal 11D Latin Hypercube sampling (max pairwise correlation $\le 0.027$); zero overlapping geometry; and synthetic boxes confirmed against full-wave FDTD references (overall median IoU $0.76$, $0.82$ on cylindrical utilities, mean arrival time error $0.51$\,ns).
 3. **Standardized Dual-Task Evaluation:** Leak-free scenario split grouped by exact geometry ($1\,\mu\text{m}$ tolerance). Reference detectors (YOLO11-m, RT-DETR-l) for detection (T1) and operational kinematic vs. learned regressor (M1 ResNet-18, MAE $2.26$\,cm) for depth estimation (T2).
 4. **Transferability and Boundary Analyses:** Demonstrates that while zero-shot transfer collapses, simulation pre-training decisively accelerates field adaptation under label scarcity (+0.29 $\text{mAP}_{50}$ on Mojahid utilities with 8--20 radargrams; up to +0.172 on Rebar concrete), corroborated by label-shuffled physics controls.
 
@@ -67,7 +67,7 @@ Frequencies are assigned per scenario (5,000 at 400 MHz and 5,000 at 700 MHz, **
   <img src="assets/fig3_dual_frequency_radargrams.png" alt="Dual Frequency Radargrams" width="85%"/>
 </p>
 
-**Visibility Horizon:** Due to dielectric attenuation and finite time windows (30 ns at 700 MHz reaches $\approx 1.0$\,m in wet soil vs. 45 ns at 400 MHz reaching $\approx 1.45$\,m), 1,242 of 19,000 targets produce echoes outside the recording window. The 700 MHz visible share drops from 96.2% in dry soil to 79.2% in wet soil. The detection benchmark strictly evaluates on visible targets (17,758 total; 3,585 on the test split).
+**Visibility Horizon:** Due to dielectric attenuation and finite time windows (30 ns at 700 MHz reaches $\approx 1.0$\,m in wet soil vs. 45 ns at 400 MHz reaching $\approx 1.45$\,m), 1,242 of 19,000 targets produce echoes outside the recording window. The 700 MHz visible share drops from 96.2% in dry soil to 79.2% in wet soil. The test split contains 230 invisible targets among 3,815; detection benchmarks strictly evaluate on visible targets (17,758 total across the benchmark; 3,585 on the test split).
 
 ---
 
@@ -134,9 +134,16 @@ Predicting utility crown depth $z_{\mathrm{top}}$ (soil cover) within engineerin
 ## Generalisation, Scaling, and Field Transfer
 
 ### 1. Out-of-Distribution (OOD) Generalisation
-* **Cross-Frequency Collapse:** Single-frequency models lose $0.31$--$0.44$ $\mathrm{AP}_{50}^{1}$ when evaluated on the other frequency ($400 \to 700$\,MHz: $0.294$ vs. $0.736$ control; $700 \to 400$\,MHz: $0.454$ vs. $0.766$ control). Frequency is the dominant distribution shift.
-* **Moisture Quasi-Invariance:** Excluding the wettest tercile during training degrades wet performance only slightly ($0.687$ vs. $0.742$ control, overlapping CIs).
-* **Depth Extrapolation:** Excluding the deepest tier degrades deep targets ($z > 1.0$\,m) from $0.580$ to $0.395$.
+
+Models are trained on restricted sub-domains and evaluated on excluded partitions to test distribution shift robustness (YOLO11-m evaluated via $\mathrm{AP}_{50}^{1}$ with 95% bootstrap intervals, benchmarked against a control trained on 3,500 uniform scenes):
+
+| Trained on | Tested on (targets $N$) | Held-out Model [95% CI] | Control Model [95% CI] | Shift Mechanism |
+|---|---|---|---|---|
+| **400 MHz only** (3,500 scenes) | 700 MHz (1,688) | 0.294 [0.271, 0.330] | 0.736 [0.703, 0.779] | **Dominant shift:** Cross-frequency loss of |
+| **700 MHz only** (3,500 scenes) | 400 MHz (1,897) | 0.454 [0.436, 0.488] | 0.766 [0.718, 0.814] | $0.31$--$0.44$ $\mathrm{AP}_{50}^{1}$ without dual training. |
+| **$\varepsilon_{r,\mathrm{sub}} < 19.7$** (4,724 scenes) | Wet tercile (1,153) | 0.687 [0.653, 0.750] | 0.742 [0.704, 0.802] | **Quasi-invariance:** Negligible wet loss. |
+| **Shallow + Medium** (3,543 scenes) | Deep-tier scenes (1,869) | 0.617 [0.571, 0.664] | 0.715 [0.680, 0.757] | Depth extrapolation degradation. |
+| **Shallow + Medium** (3,543 scenes) | Deep targets $z > 1.0$\,m (1,332) | 0.395 [0.358, 0.457] | 0.580 [0.546, 0.634] | Loss concentrated on targets deeper than 1\,m. |
 
 ### 2. Data Scaling and Noise Robustness
 
