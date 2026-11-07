@@ -14,3 +14,4 @@ runs/
 # local tool folders (never publish)
 .claude/
 .mcp.json
+sample_data/visualized/
