@@ -6,21 +6,21 @@ authors:
   - family-names: "Tu"
     given-names: "Dinh-Nguyen"
     orcid: "https://orcid.org/0009-0009-7489-1102"
-    affiliation: "High School for the Gifted, Vietnam National University Ho Chi Minh City"
+    affiliation: "VNU University of Engineering and Technology, Hanoi, Vietnam"
   - family-names: "Nguyen"
     given-names: "Hoang-Thien-Nga"
     orcid: "https://orcid.org/0009-0007-9383-7713"
-    affiliation: "High School for the Gifted, Vietnam National University Ho Chi Minh City"
+    affiliation: "Le Quy Don High School for the Gifted, Danang, Vietnam"
   - family-names: "Dang"
     given-names: "Hoai-Trung"
     orcid: "https://orcid.org/0000-0002-8089-9380"
-    affiliation: "University of Science, Vietnam National University Ho Chi Minh City"
+    affiliation: "Danang University of Science and Technology, Danang, Vietnam"
 repository-code: "https://github.com/BonTapHoa/gpr-urban-vn-benchmark"
 license: MIT
 date-released: "2026-11-03"
 preferred-citation:
   type: article
-  title: "GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical Urban Pavements"
+  title: "GPR-URBAN-VN: A Physics-Validated Dual-Frequency Benchmark for Subsurface Detection and Depth Estimation in Tropical Urban Pavements"
   authors:
     - family-names: "Tu"
       given-names: "Dinh-Nguyen"

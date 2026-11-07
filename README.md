@@ -1,4 +1,4 @@
-# GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical Urban Pavements
+# GPR-URBAN-VN: A Physics-Validated Dual-Frequency Benchmark for Subsurface Detection and Depth Estimation in Tropical Urban Pavements
 
 [![Paper Under Review](https://img.shields.io/badge/Paper-ACIIDS%202027%20CIV-orange.svg)](#citation)
 [![License: MIT](https://img.shields.io/badge/Code%20License-MIT-blue.svg)](LICENSE)
@@ -257,7 +257,7 @@ If you use GPR-URBAN-VN in your research, please cite:
 ```bibtex
 @inproceedings{tu2027gprurbanvn,
   author    = {Tu, Dinh-Nguyen and Nguyen, Hoang-Thien-Nga and Dang, Hoai-Trung},
-  title     = {{GPR-URBAN-VN: A Dual-Frequency Simulated GPR Benchmark for Subsurface Utility Detection in Tropical Urban Pavements}},
+  title     = {{GPR-URBAN-VN: A Physics-Validated Dual-Frequency Benchmark for Subsurface Detection and Depth Estimation in Tropical Urban Pavements}},
   booktitle = {Proceedings of the Asian Conference on Intelligent Information and Database Systems (ACIIDS 2027)},
   series    = {Lecture Notes in Artificial Intelligence},
   publisher = {Springer},
@@ -267,9 +267,9 @@ If you use GPR-URBAN-VN in your research, please cite:
 ```
 
 Authors:
-* **Dinh-Nguyen Tu** (High School for the Gifted, VNU-HCM) - Corresponding author (`tudinhbon2009@gmail.com`)
-* **Hoang-Thien-Nga Nguyen** (High School for the Gifted, VNU-HCM)
-* **Hoai-Trung Dang** (University of Science, VNU-HCM)
+* **Dinh-Nguyen Tu** (VNU University of Engineering and Technology, Hanoi) - Corresponding author (`tudn@vnu.edu.vn`)
+* **Hoang-Thien-Nga Nguyen** (Le Quy Don High School for the Gifted, Danang)
+* **Hoai-Trung Dang** (Danang University of Science and Technology, Danang)
 
 ---
 
