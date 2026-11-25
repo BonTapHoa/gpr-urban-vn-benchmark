@@ -77,7 +77,7 @@ Frequencies are assigned per scenario (5,000 at 400 MHz and 5,000 at 700 MHz, **
 
 Evaluated on 2,000 test B-scans (3,585 targets with bounding boxes). We report standard COCO metrics and **$\mathrm{AP}_{50}^{1}$** (greedy one-label-per-box matching at IoU=0.5, enforcing strict 1:1 attribution essential for civil mapping) with 95% percentile bootstrap confidence intervals over 1,000 test image resamples.
 
-| Model | Architecture | Params | $\mathrm{mAP}_{50}$ | $\mathrm{mAP}_{50\text{--}95}$ | Precision | Recall | $\mathrm{AP}_{50}^{1}$ [95% CI] |
+| Model | Architecture | Params | $\mathrm{mAP}_{50}$ | $\mathrm{mAP}_{50\text{–}95}$ | Precision | Recall | $\mathrm{AP}_{50}^{1}$ [95% CI] |
 |---|---|---|---|---|---|---|---|
 | **YOLO11-m** | One-stage CNN | 20.1M | 0.864 | 0.733 | 0.903 | 0.786 | 0.831 [0.802, 0.866] |
 | **RT-DETR-l** | Hybrid Transformer | 32.8M | **0.893** | **0.845** | **0.922** | **0.837** | **0.893** [0.867, 0.918] |
@@ -267,9 +267,9 @@ If you use GPR-URBAN-VN in your research, please cite:
 ```
 
 Authors:
-* **Dinh-Nguyen Tu** (VNU University of Engineering and Technology, Hanoi) - Corresponding author (`tudn@vnu.edu.vn`)
-* **Hoang-Thien-Nga Nguyen** (Le Quy Don High School for the Gifted, Danang)
-* **Hoai-Trung Dang** (Danang University of Science and Technology, Danang)
+* **Dinh-Nguyen Tu** (High School for the Gifted, Vietnam National University Ho Chi Minh City, Ho Chi Minh City, Vietnam) - Corresponding author (`tudinhbon2009@gmail.com`)
+* **Hoang-Thien-Nga Nguyen** (High School for the Gifted, Vietnam National University Ho Chi Minh City, Ho Chi Minh City, Vietnam)
+* **Hoai-Trung Dang** (University of Science, Vietnam National University Ho Chi Minh City, Ho Chi Minh City, Vietnam)
 
 ---
 
